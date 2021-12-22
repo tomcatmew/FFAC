@@ -1,6 +1,14 @@
 # FFAC  Fourier Feature Animation Controller
 This is a Demo reporsitory of our Fourier Feature Character Animation Controller which only contains the code are necessary for running the demo\
-Full source code are not public yet
+Full source code are not public yet\
+Required Libraries
+```
+glfw
+delfem2
+eigen
+imgui
+libtorch
+```
 ## Preview
 ![Previewvid](image/demo_thumbnail.gif)
 ## How to use
