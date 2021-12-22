@@ -11,6 +11,12 @@ eigen
 imgui
 libtorch
 ```
+
+Memory Comparsion 
+|        | Motion Data | Our FFAC network |
+|--------|-------------|------------------|
+| Memory | 265MB       | 1.5MB            |
+
 ## Preview
 ![Previewvid](image/demo_thumbnail.gif)
 ## How to use
