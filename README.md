@@ -19,7 +19,8 @@ libtorch
 
 \
 \
-**Evaluation**\
+**Evaluation** *(Same size of parameters)*\
+\
 <img src="image/stat1.png" alt="sta1" width="450"/>
 <img src="image/stat2.png" alt="sta2" width="450"/>
 \
