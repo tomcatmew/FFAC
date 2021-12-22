@@ -12,17 +12,19 @@ I strongly recommend you to have a controller ready on your computer, though you
 <img src="image/gamepad.JPG" alt="Gamepad" width="300"/>
 
 **Gamepad Control**
+```
 - Leftstick              - Moving Direction
 - Rightsitck             - Camera Direction
 - LT (HOLD) + Rightstick - Facing Direction
 - RT (HOLD)              - Switch to Run
-
+```
 **Keyboard Control**
+```
 - W S A D (HOLD)                 - Moving Direction
 - ALT (HOLD) + Leftclick (HOLD)  - Camera Direction
 - X                              - Stop
 - F                              - Switch to Run/Walk
-
+```
 ## Build from Source
 If you want to build the source code, you should follow the instructions below
 -  Run `git submodule update --init` to install all required submodules
