@@ -21,9 +21,9 @@ libtorch
 \
 **Evaluation** *(Models have same size of parameters)*\
 \
-<img src="image/stat1.png" alt="sta1" width="450"/>
-<img src="image/stat2.png" alt="sta2" width="450"/>
-\
+<img src="image/stat1.png" alt="sta1" width="440"/>
+<img src="image/stat2.png" alt="sta2" width="440"/>
+
 ## Preview
 ![Previewvid](image/demo_thumbnail.gif)
 ## How to use
