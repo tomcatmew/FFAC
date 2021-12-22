@@ -69,5 +69,5 @@ If you want to build the source code, you should follow the instructions below
 ```
 
 - **Step 3**(Linux) Build the cmake file in `Source` folder and make sure you complie in release mode
-- **Step 3**(Windows) Go to `Source/` run `cmake -S . - B build` the Vistual Studio files will be inside the `build/` folder.
+- **Step 3**(Windows) Go to `Source/` run `cmake -S . -B build` the cmake will generate the Vistual Studio solution files inside the `build/` folder.
 
