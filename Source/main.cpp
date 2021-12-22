@@ -26,6 +26,7 @@
 #include "delfem2/glfw/util.h"
 #include "delfem2/opengl/old/funcs.h"
 #include "delfem2/opengl/old/rigv3.h"
+#include "delfem2/rig_bvh.h"
 
 //   bvh loader, parser and model loaders
 namespace dfm2 = delfem2;
@@ -276,13 +277,17 @@ int main(int argc, char *argv[]) {
     std::vector<dfm2::CVec2d> aRootDirZ, aRootPos2;
     {
         std::string path_bvh = std::string(PATH_SOURCE_DIR) + vec_path_bvh[2];
-        int nframe = 0;
+        size_t nframe = 0;
+        double frame_time;
+        std::string header_bvh;
         std::vector<double> vec_bvh_time_series_data;
         Read_BioVisionHierarchy(
             vec_rig_bone,
             vec_channel_bvh,
             nframe,
+            frame_time,
             vec_bvh_time_series_data,
+            header_bvh,
             path_bvh);
 
         dfm2::SetPose_BioVisionHierarchy(
@@ -367,7 +372,7 @@ int main(int argc, char *argv[]) {
 
   delfem2::glfw::InitGLOld();
 
-  viewer_source.InitGL();
+  viewer_source.OpenWindow();
 
   delfem2::opengl::setSomeLighting();
 
