@@ -1,4 +1,4 @@
-# FFAC
+# FFAC  Fourier Feature Character Animation Controller
 This is a Demo reporsitory of our Fourier Feature Character Animation Controller which only contains the code are necessary for running the demo\
 Full source code are not public yet
 ## Preview
@@ -24,7 +24,7 @@ I strongly recommend you to have a controller ready on your computer, though you
 - F                              - Switch to Run/Walk
 
 ## Build from Source
-If you want to build the source code, you should follow the instructions below/
+If you want to build the source code, you should follow the instructions below\
 -  Run `git submodule update --init` to install all required submodules
 -  (Linux) Build the required package and place them in `3rd_party/glfw` and `3rd_party/libtorch`
 -  (Windows) Download the pre-complied [GLFW](https://www.glfw.org/download) and [Libtorch](https://pytorch.org/) and place them in `3rd_party/glfw` and `3rd_party/libtorch`
