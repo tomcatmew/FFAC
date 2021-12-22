@@ -13,9 +13,9 @@ libtorch
 ```
 
 Memory Comparsion 
-|        | Motion Data | Our FFAC network |
-|--------|-------------|------------------|
-| Memory | 265MB       | 1.5MB            |
+|        | Motion Data | Our FFAC network | PFNN             |
+|--------|-------------|------------------|------------------|
+| Memory | 265MB       | 1.5MB            |5MB               |
 
 ## Preview
 ![Previewvid](image/demo_thumbnail.gif)
