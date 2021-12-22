@@ -1,6 +1,6 @@
 # FFAC  Fourier Feature Animation Controller
 
-*Clone the repository may take 8-15 minutes depends on your interenet connection* \
+*Clone the repository may take 8-15 minutes depends on your Internet connection* \
 This is a Demo reporsitory of our Fourier Feature Character Animation Controller which only contains the code are necessary for running the demo\
 Full source code are not public yet\
 Required Libraries
