@@ -1,4 +1,4 @@
-# FFAC  Fourier Animation Controller
+# FFAC  Fourier Feature Animation Controller
 This is a Demo reporsitory of our Fourier Feature Character Animation Controller which only contains the code are necessary for running the demo\
 Full source code are not public yet
 ## Preview
