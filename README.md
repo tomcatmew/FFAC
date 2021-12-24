@@ -11,8 +11,8 @@ eigen
 imgui
 libtorch
 ```
-**Input and Output**
-One significant difference between our current method and previous data-driven appraoches is that we only used phase,orientation and trajecotry positions as input and output the full body pose data. Input is size 24 including 5 future trajectory, 5 past trajectory samples, phase, and body-orientation vector. Preivous data-driven methods usually have a input size > 100 with preivous frame joint information, future/past trajectory, and gait. 
+**Input and Output**\
+One significant difference between our current method and previous data-driven appraoches is that we only used phase,orientation and trajecotry positions as input and output the full body pose data. Input is size 24 including 5 future trajectory, 5 past trajectory samples, phase, and body-orientation vector. Preivous data-driven methods usually have a input size > 100 with preivous frame joint information, future/past trajectory, and gait. \
 **Memory Comparsion**
 |        | Motion Data | Our FFAC network | PFNN             |
 |--------|-------------|------------------|------------------|
