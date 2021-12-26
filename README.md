@@ -1,6 +1,6 @@
 # FFAC  Fourier Feature Animation Controller
-*Introduction*\
-This repository contains large files, e.g. lafan1/lafan1.zip (137M). In order to clone this repository including the complete zip files, you need to use [git lfs](https://github.com/git-lfs/git-lfs/wiki/Installation).\
+##Introduction
+This repository contains large files, e.g. Demo/torch_cpu.dll (210.4MB). In order to clone this repository including the complete zip files, you need to use [git lfs](https://github.com/git-lfs/git-lfs/wiki/Installation).\
 *Clone the repository may take 8-15 minutes depends on your Internet connection*
 
 This is a Demo reporsitory of our Fourier Feature Character Animation Controller which only contains the code are necessary for running the demo\
