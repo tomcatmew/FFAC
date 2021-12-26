@@ -1,5 +1,5 @@
 # FFAC  Fourier Feature Animation Controller
-##Introduction
+## Introduction
 This repository contains large files, e.g. Demo/torch_cpu.dll (210.4MB). In order to clone this repository including the complete zip files, you need to use [git lfs](https://github.com/git-lfs/git-lfs/wiki/Installation).\
 *Clone the repository may take 8-15 minutes depends on your Internet connection*
 
