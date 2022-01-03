@@ -1,8 +1,6 @@
 /*
- * Copyright (c) 2019 Nobuyuki Umetani
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * Copyright (c) 2019 Yifei Chen and Prof.Umetani (delfem2 library)
+ * 
  */
 #include <chrono>
 
@@ -617,8 +615,8 @@ int main(int argc, char *argv[]) {
           traj_yv_goal = damper(traj_yv_goal, y_target_v, 0.1f);
       }
 
-      spring_character_update(trajx, trajxv, trajxa, traj_xv_goal, halflife, dt);
-      spring_character_update(trajy, trajyv, trajya, traj_yv_goal, halflife, dt);
+      spring_character_update_dt(trajx, trajxv, trajxa, traj_xv_goal, halflife, dt);
+      spring_character_update_dt(trajy, trajyv, trajya, traj_yv_goal, halflife, dt);
 
       spring_character_predict(predx, predxv, predxa, PRED_MAX, trajx, trajxv, trajxa, traj_xv_goal, halflife, dt* PRED_SUB);
       spring_character_predict(predy, predyv, predya, PRED_MAX, trajy, trajyv, trajya, traj_yv_goal, halflife, dt* PRED_SUB);

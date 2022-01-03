@@ -106,6 +106,8 @@ void draw_black_sphere(
     ::delfem2::opengl::DrawSphereAt(32, 32, 0.5, ip[0], 0, ip[1]);
 }
 
+
+// some utility function learned from Holden's Website Guide
 float lerp(float x, float y, float a)
 {
     return (1.0f - a) * x + a * y;
@@ -129,7 +131,7 @@ float fast_negexp(float x)
     return 1.0f / (1.0f + x + 0.48f * x * x + 0.235f * x * x * x);
 }
 
-void spring_character_update(
+void spring_character_update_dt(
     float& x,
     float& v,
     float& a,
@@ -140,12 +142,14 @@ void spring_character_update(
     float y = halflife_to_damping(halflife) / 2.0f;
     float j0 = v - v_goal;
     float j1 = a + j0 * y;
-    float eydt = fast_negexp(y * dt);
+    float exp_result = fast_negexp(y * dt);
 
-    x = eydt * (((-j1) / (y * y)) + ((-j0 - j1 * dt) / y)) +
+    x = exp_result * (((-j1) / (y * y)) + ((-j0 - j1 * dt) / y)) +
         (j1 / (y * y)) + j0 / y + v_goal * dt + x;
-    v = eydt * (j0 + j1 * dt) + v_goal;
-    a = eydt * (a - j1 * y * dt);
+
+    v = exp_result * (j0 + j1 * dt) + v_goal;
+
+    a = exp_result * (a - j1 * y * dt);
 }
 
 void spring_character_predict(
@@ -162,6 +166,7 @@ void spring_character_predict(
 {
     for (int i = 0; i < count; i++)
     {
+        // num of samples
         px[i] = x;
         pv[i] = v;
         pa[i] = a;
@@ -169,7 +174,8 @@ void spring_character_predict(
 
     for (int i = 0; i < count; i++)
     {
-        spring_character_update(px[i], pv[i], pa[i], v_goal, halflife, i * dt);
+        // update pos
+        spring_character_update_dt(px[i], pv[i], pa[i], v_goal, halflife, i * dt);
     }
 }
 
