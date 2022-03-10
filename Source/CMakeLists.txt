@@ -13,7 +13,7 @@ ENDIF ()
 
 ####################################
 
-project(Runtime_demo_by_YIFEI_CHEN)
+project(Runtime_demo)
 
 add_definitions(-DPATH_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 

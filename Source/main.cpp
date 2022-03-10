@@ -3,7 +3,7 @@
  * 
  */
 #include <chrono>
-
+#include <filesystem>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -240,12 +240,23 @@ int main(int argc, char *argv[]) {
     constexpr int noctave = 2;
     constexpr int size_hidden_pose = 512;
     const std::string mode = "ff";
+
+    std::filesystem::path path = std::filesystem::current_path();
+#if defined(WIN32) || defined(_WIN32)
     MLP_Fourier<ndim_input_pose, noctave> model_pose(
         std::string(PATH_SOURCE_DIR) +
         "/../data/pose_" + mode +
         "_no" + std::to_string(noctave) +
         "_nh" + std::to_string(size_hidden_pose) +
         ".pt");
+#else
+    MLP_Fourier<ndim_input_pose, noctave> model_pose(
+        path.string() +
+        "/../data/pose_" + mode +
+        "_no" + std::to_string(noctave) +
+        "_nh" + std::to_string(size_hidden_pose) +
+        ".pt");
+#endif
 
     constexpr int ndim_input_phase = 20;
     constexpr int num_layer_phase = 2;
