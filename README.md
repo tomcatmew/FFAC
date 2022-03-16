@@ -7,6 +7,10 @@
 - [Build from Source](#build-from-Source)
 - [Thoughts and Future Improvement](#thoughts-and-future-improvement)
 
+Relative Paper 
+1. [Neural Motion Compression with Frequency-adaptive Fourier Feature Network](https://cgenglab.github.io/labpage/en/publication/eg22short_neuralcompression/)
+2. [Phase-Functioned Neural Networks for Character Control](http://www.ipab.inf.ed.ac.uk/cgvu/phasefunction.pdf)
+
 ## Introduction
 This repository contains large files, e.g. Demo/torch_cpu.dll (210.4MB). In order to clone this repository including the complete zip files, you need to use [git lfs](https://github.com/git-lfs/git-lfs/wiki/Installation).\
 *Clone the repository may take 8-15 minutes depends on your Internet connection*
@@ -104,5 +108,7 @@ If you want to build the source code, you should follow the instructions below
 
 ## Thoughts and Future Improvement
 ![think](image/discuss.gif)
+As shown in the video above, when we train the neural network with a higher frequency fourier feature, the output animation data performs jitter and shaking result. Our assumption is the current motion data doesn't contain any high frequency information (the joint angles change rapidly between frames). Walking and running are considered as low frequency animation while increasing the fourier mapping freq doesn't help at all, but it did slightly improve the accuracy of animation when feet touching ground despite of the jitter frames. Frequncy choosing would be a key in order to make this research idea becoming more convincible. 
 
-As shown in the video above, when we train the neural network with a higher frequency fourier feature, the output animation data performs jitter and shaking result. Our assumption is the current motion data doesn't contain any high frequency information (the joint angles change rapidly between frames). Walking and running are considered as low frequency animation while increasing the fourier mapping freq doesn't help at all, but it did slightly improve the accuracy of animation when feet touching ground despite of the jitter frames. 
+![think](image/ffac_compression.png)
+In our paper [Neural Motion Compression with Frequency-adaptive Fourier Feature Network](https://cgenglab.github.io/labpage/en/publication/eg22short_neuralcompression/), picking dominate frequency from DCT of the motion gives significantly better result. I think in FFAC, in stead of feeding frequencies 1,2,3...., we could predict the ideal frequency for current animation based on the future and past trajectory. It means we could predict a dominated frequency based on the trajectory. This may give us better result. 
