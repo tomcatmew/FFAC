@@ -7,7 +7,7 @@
 - [Build from Source](#build-from-Source)
 - [Thoughts and Future Improvement](#thoughts-and-future-improvement)
 
-Related Paper 
+**Relative  Paper**
 1. [Neural Motion Compression with Frequency-adaptive Fourier Feature Network](https://cgenglab.github.io/labpage/en/publication/eg22short_neuralcompression/)
 2. [Phase-Functioned Neural Networks for Character Control](http://www.ipab.inf.ed.ac.uk/cgvu/phasefunction.pdf)
 
