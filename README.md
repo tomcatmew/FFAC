@@ -5,6 +5,7 @@
   - [Demo](#demo)
 - [How to control](#how-to-control)
 - [Build from Source](#build-from-Source)
+- [Unity Implementation](#unity-implementation)
 - [Thoughts and Future Improvement](#thoughts-and-future-improvement)
 
 **Relative  Paper**
@@ -105,6 +106,15 @@ If you want to build the source code, you should follow the instructions below
 - **Step 3**(Linux) Build the cmake file in `Source` folder and make sure you complie in release mode
 - **Step 3**(Windows) Go to `Source/` run `cmake -S . -B build` the cmake will generate the Vistual Studio solution files inside the `build/` folder.
 
+## Unity Implementation
+Currently I'm trying to implement the idea in Unity engine. \
+Still working on it.
+![a](image/unity1.gif)\
+**TODO**
+[x] Build a .BVH loader 
+[ ] Implement trajectory system
+[ ] Implement NN model
+[ ] Implement the full controller
 
 ## Thoughts and Future Improvement
 ![think](image/discuss.gif)\
