@@ -108,13 +108,13 @@ If you want to build the source code, you should follow the instructions below
 
 ## Unity Implementation
 Currently I'm trying to implement the idea in Unity engine. \
-Still working on it.
-![a](image/unity1.gif)\
+Still working on it.\
+![a](image/unitya.gif)\
 **TODO**
-[x] Build a .BVH loader 
-[ ] Implement trajectory system
-[ ] Implement NN model
-[ ] Implement the full controller
+- [x] Build a .BVH loader 
+- [ ] Implement trajectory system
+- [ ] Implement NN model
+- [ ] Implement the full controller
 
 ## Thoughts and Future Improvement
 ![think](image/discuss.gif)\
