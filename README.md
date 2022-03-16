@@ -1,4 +1,12 @@
 # FFAC  Fourier Feature Animation Controller
+- [Introduction](#introduction)
+- [Preview](#preview)
+- [How to run](#how-to-use)
+  - [Demo](#demo)
+- [How to control](#how-to-control)
+- [Build from Source](#build-from-Source)
+- [Thoughts and Future Improvement](#thoughts-and-future-improvement)
+
 ## Introduction
 This repository contains large files, e.g. Demo/torch_cpu.dll (210.4MB). In order to clone this repository including the complete zip files, you need to use [git lfs](https://github.com/git-lfs/git-lfs/wiki/Installation).\
 *Clone the repository may take 8-15 minutes depends on your Internet connection*
@@ -94,7 +102,7 @@ If you want to build the source code, you should follow the instructions below
 - **Step 3**(Windows) Go to `Source/` run `cmake -S . -B build` the cmake will generate the Vistual Studio solution files inside the `build/` folder.
 
 
-## Thoughts
+## Thoughts and Future Improvement
 ![think](image/discuss.gif)
 
 As shown in the video above, when we train the neural network with a higher frequency fourier feature, the output animation data performs jitter and shaking result. Our assumption is the current motion data doesn't contain any high frequency information (the joint angles change rapidly between frames). Walking and running are considered as low frequency animation while increasing the fourier mapping freq doesn't help at all, but it did slightly improve the accuracy of animation when feet touching ground despite of the jitter frames. 
