@@ -563,9 +563,7 @@ int main(int argc, char *argv[]) {
                   // run
 
                   f = damper(f, 0.01f, 0.1f);
-                  //f = 0.01f;
                   halflife = damper(halflife, 0.7f, 0.1f);
-                  //halflife = 0.7f;
                   velocity_mag = damper(velocity_mag, 22.0f, 0.1f);
                   traj_xv_goal = gamepad_x * velocity_mag;
                   traj_yv_goal = gamepad_y * velocity_mag;
@@ -575,9 +573,8 @@ int main(int argc, char *argv[]) {
                   // walk 
 
                   f = damper(f, 0.006f, 0.1f);
-                  //f = 0.006f;
-                  halflife = damper(halflife, 0.9, 0.1f);
-                  //halflife = 0.4f;
+                  //halflife = damper(halflife, 0.9, 0.1f);
+                  halflife = damper(halflife, 0.5f, 0.1f);
                   velocity_mag = damper(velocity_mag, 10.0f, 0.1f);
                   traj_xv_goal = gamepad_x * velocity_mag;
                   traj_yv_goal = gamepad_y * velocity_mag;
@@ -683,15 +680,17 @@ int main(int argc, char *argv[]) {
         viewer_source.view_rotation->Rot_Camera(-static_cast<float>(gamepad2_x), -static_cast<float>(gamepad2_y));
 
 
-      //NN input are here  *** (ßÍß) ***
+      //NN input are here  
       float goal_x = 0.0f;
       float goal_y = 0.0f;
       if (facing_control_mode == false) {
           dfm2::CVec2d goal_dirZ(predx[1] - trajx_prev[0], predy[1] - trajy_prev[0]);
           goal_dirZ.normalize();
           face_dirZ.normalize();
-          goal_x = damper(face_dirZ.x, goal_dirZ.x, 0.1);
-          goal_y = damper(face_dirZ.y, goal_dirZ.y, 0.1);
+          goal_x = damper(face_dirZ.x, goal_dirZ.x, 0.065);
+          goal_y = damper(face_dirZ.y, goal_dirZ.y, 0.065);
+          //goal_x = damper(face_dirZ.x, goal_dirZ.x, 0.1);
+          //goal_y = damper(face_dirZ.y, goal_dirZ.y, 0.1);
           if ((goal_x >= -1) && (goal_x <= 1))
           {
               face_dirZ.x = goal_x; // get rid of initial broken data, fix it later
