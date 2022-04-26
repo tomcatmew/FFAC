@@ -46,7 +46,9 @@ It is true that our current visual result definitely not better than any of prev
 <img src="image/stat2.png" alt="sta2" width="440"/>
 
 ## Preview
-![Previewvid](image/demo_thumbnail.gif)
+<!-- <img src="image/ava.gif" alt="sta1" width="640"/>\ -->
+<!-- ![Previewvid](image/demo_thumbnail.gif) -->
+![Previewvid](image/ava.gif)
 ## How to use
 ### Demo
 If you just want to run the demo program without worring about the source code, simply run `Demo/Runtime_demo_by_YIFEI_CHEN.exe` on Windows.\
