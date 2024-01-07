@@ -27,9 +27,9 @@ imgui
 libtorch
 ```
 **Network**\
-![Previewvid1](image/network.png)
+<img src="image/network.png" alt="sta11" width="640"/>\
 **Overview**\
-![Previewvid1](image/ava.gif)
+<img src="image/ava.gif" alt="sta111" width="640"/>\
 **Input and Output**\
 One significant difference between our current method and previous data-driven appraoches is that we only used phase,orientation and trajecotry positions as input and output the full body pose data. Input is size 24 including 5 future trajectory, 5 past trajectory samples, phase, and body-orientation vector. Preivous data-driven methods usually have a input size > 200 with preivous frame joint information, future/past trajectory, and gait. \
 It is true that our current visual result definitely not better than any of previous approaches, but with adding more inputs I think we could achieve a considerably less "foot sliding" animation.\
