@@ -26,14 +26,18 @@ eigen
 imgui
 libtorch
 ```
-**Network**
-<img src="image/network.png" alt="sta11" width="640"/>
-**Overview**
-<img src="image/ava.gif" alt="sta111" width="640"/>
+**Network**\
+<img src="image/network.png" alt="sta11" width="640"/>\
+**Overview**\
+<img src="image/ava.gif" alt="sta111" width="640"/>\
+
 **Input and Output**
+
 One significant difference between our current method and previous data-driven appraoches is that we only used phase,orientation and trajecotry positions as input and output the full body pose data. Input is size 24 including 5 future trajectory, 5 past trajectory samples, phase, and body-orientation vector. Preivous data-driven methods usually have a input size > 200 with preivous frame joint information, future/past trajectory, and gait. \
 It is true that our current visual result definitely not better than any of previous approaches, but with adding more inputs I think we could achieve a considerably less "foot sliding" animation.\
+
 **IK for disconnected joints**
+
 Because the FFAC network will predict both the local translation and rotation related to the root bone, some of the joints, such as hands and feet joints, may disconnected from their parent bone because their local position is far from root bone, the network predicted local position will have a slightly larger error on those joints. 
 <img src="image/disconnected_bones.png" alt="sta13" width="640"/>\
 One of the solutions is to apply the full-body IK. In our case, we used CCD IK. The disconnected joints will be reconnected. 
