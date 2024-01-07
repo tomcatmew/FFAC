@@ -27,7 +27,7 @@ imgui
 libtorch
 ```
 **Network**\
-<img src="image/network.png" alt="sta11" width="640"/>\
+<img src="./image/network.png" alt="sta11" width="640"/>\
 **Overview**\
 <img src="image/ava.gif" alt="sta111" width="640"/>\
 **Input and Output**\
