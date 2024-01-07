@@ -26,7 +26,7 @@
 #include "delfem2/opengl/old/rigv3.h"
 #include "delfem2/rig_bvh.h"
 
-//#define DRAWDEBUG
+#define DRAWDEBUG
 
 //   bvh loader, parser and model loaders
 namespace dfm2 = delfem2;
@@ -217,95 +217,7 @@ void applyFK(std::vector<dfm2::CRigBone>& aBone)
     UpdateBoneRotTrans(aBone);
 }
 
-void backward(std::vector<dfm2::CVec3d>& joints, std::vector<double>& length, dfm2::CVec3d target)
-{
-    joints[joints.size() - 1].x = target.x;
-    joints[joints.size() - 1].y = target.y;
-    joints[joints.size() - 1].z = target.z;
-    for (int i = joints.size() - 2; i >= 0; i--)
-    {
-        dfm2::CVec3d dir_back = joints[i] - joints[i + 1];
-        dir_back.normalize();
-        dfm2::CVec3d new_pos = joints[i + 1] + dir_back * length[i + 1];
-        joints[i].x = new_pos.x;
-        joints[i].y = new_pos.y;
-        joints[i].z = new_pos.z;
-    }
-}
-
-
-void forward(std::vector<dfm2::CVec3d>& joints, std::vector<double>& length, dfm2::CVec3d origin)
-{
-    joints[0].x = origin.x;
-    joints[0].y = origin.y;
-    joints[0].z = origin.z;
-    for (unsigned int i = 1; i <= joints.size() - 1; i++)
-    {
-        dfm2::CVec3d dir_foward = joints[i] - joints[i - 1];
-        dir_foward.normalize();
-        dfm2::CVec3d new_pos = joints[i - 1] + dir_foward * length[i];
-        joints[i].x = new_pos.x;
-        joints[i].y = new_pos.y;
-        joints[i].z = new_pos.z;
-    }
-}
-
-
-void FABRIK(std::vector<dfm2::CRigBone>& aBone, dfm2::CVec3d target)
-{
-    std::vector<dfm2::CVec3d> start_pos;
-    std::vector<dfm2::CVec3d> joints;
-    std::vector<double> length;
-    dfm2::CVec3d origin(aBone[2].affmat3Global[3], aBone[2].affmat3Global[7], aBone[2].affmat3Global[11]);
-    for (int i = 2; i < 5; i++)
-    {
-        dfm2::CVec3d jointPost = dfm2::CVec3d(aBone[i].affmat3Global[3], aBone[i].affmat3Global[7], aBone[i].affmat3Global[11]);
-        joints.push_back(jointPost);
-        start_pos.push_back(jointPost);
-        dfm2::CVec3d p0(aBone[i-1].invBindMat[3], aBone[i-1].invBindMat[7], aBone[i-1].invBindMat[11]);
-        dfm2::CVec3d p1(aBone[i].invBindMat[3], aBone[i].invBindMat[7], aBone[i].invBindMat[11]);
-        double boneLength = dfm2::Distance(p0,p1);
-        length.push_back(boneLength);
-    }
-
-    for (unsigned int j = 0; j < 2; j++)
-    {
-        backward(joints,length, target);
-        forward(joints,length, origin);
-    }
-
-    std::vector<dfm2::CVec3d> end_pos;
-    for (unsigned int i = 0; i < joints.size(); i++)
-    {
-        dfm2::CVec3d pend = joints[i];
-        end_pos.push_back(pend);
-    }
-
-    //reset 
-    //for (unsigned int i = 0; i < start_pos.size(); i++)
-    //{
-    //    joints[i].move(start_pos[i].x, start_pos[i].y, start_pos[i].z);
-    //}
-
-    //Forward Kinematic
-    for (unsigned int i = 1; i < joints.size(); i++)
-    {
-        dfm2::CQuatd r_q;
-        r_q = qfv(start_pos[i] - end_pos[i - 1], end_pos[i] - end_pos[i - 1]);
-        //r_q.SetSmallerRotation();
-        r_q.normalize();
-        int bonemap[3] = { 2,3,4 };
-        dfm2::CQuatd bone_q(aBone[bonemap[i - 1]].quatRelativeRot[3], aBone[bonemap[i - 1]].quatRelativeRot[0], aBone[bonemap[i - 1]].quatRelativeRot[1], aBone[bonemap[i - 1]].quatRelativeRot[2]);
-        dfm2::CQuatd q_current = r_q * bone_q;
-        aBone[bonemap[i - 1]].quatRelativeRot[0] = q_current.x;
-        aBone[bonemap[i - 1]].quatRelativeRot[1] = q_current.y;
-        aBone[bonemap[i - 1]].quatRelativeRot[2] = q_current.z;
-        aBone[bonemap[i - 1]].quatRelativeRot[3] = q_current.w;
-    }
-    UpdateBoneRotTrans(aBone);
-}
-
-void solveik(std::vector<dfm2::CRigBone>& aBone, dfm2::CVec3d target, int start_bone, int end_bone)
+void solveIK(std::vector<dfm2::CRigBone>& aBone, dfm2::CVec3d target, int start_bone, int end_bone)
 {
     UpdateBoneRotTrans(aBone);
     int num_iter = 3;
@@ -421,12 +333,12 @@ void PostProcessRigBone(
     UpdateBoneRotTrans(aBone_render);
     dfm2::CVec3d targetL = dfm2::CVec3d(lockAffmat3GlobalL[3], lockAffmat3GlobalL[7], lockAffmat3GlobalL[11]);
     dfm2::CVec3d targetR = dfm2::CVec3d(lockAffmat3GlobalR[3], lockAffmat3GlobalR[7], lockAffmat3GlobalR[11]);
-    //if (distanceLeft < 0.17f) {
-    //    solveIK(aBone_render, targetL, 3, 2);
-    //}
-    //if (distanceRight < 0.17f) {
-    //    solveIK(aBone_render, targetR, 9, 8);
-    //}
+    if (distanceLeft < 0.17f) {
+        solveIK(aBone_render, targetL, 3, 2);
+    }
+    if (distanceRight < 0.17f) {
+        solveIK(aBone_render, targetR, 9, 8);
+    }
 }
 
 
