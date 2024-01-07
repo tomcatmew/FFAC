@@ -69,6 +69,7 @@ The red sphere is the foot joint's position and the green sphere in the video sh
 <img src="image/ikapplied_debug.gif" alt="sta16" width="640"/>
 <em>foot lock IK debug</em>
 </p>
+
 **Memory Comparsion**
 |        | Motion Data | Our FFAC network | PFNN             |
 |--------|-------------|------------------|------------------|
