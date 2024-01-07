@@ -61,8 +61,10 @@ The predicted animation also has a foot sliding issue where the predicted foot p
 </p>
 
 By implementing IK to leg-ankle joints, and combining the foot locking feature we may fix the foot sliding problem. 
-First, we compute the speed of both foot joints, when the speed is slower than the specific threshold $S_{threshold} = 1.5$. We lock the foot and apply 2 joints IK to the leg-angle joints. 
+
+First, we compute the speed of both foot joints, when the speed is slower than the specific threshold $S_{threshold} < 1.5$. We lock the foot and apply 2 joints IK to the leg-angle joints. 
 The red sphere is the foot joint's position and the green sphere in the video shows the IK's target. IK will be applied when the green sphere appears. 
+
 (WIP) To make the animation have a more smooth transition between IK and predicted animation, we shall interpolate the animation when we apply or disable IK. This part is still working in progress. 
 
 <p>
