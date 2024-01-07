@@ -50,8 +50,11 @@ One of the solutions is to apply the full-body IK. In our case, we used CCD IK. 
 
 The predicted animation also has a foot sliding issue where the predicted foot position does not perfectly match the trajectory speed.
 
+<p>
 <img src="image/ikapplied.gif" alt="sta15" width="640"/>
 <em>image_caption</em>
+</p>
+
 By implementing IK to leg-ankle joints, and combining the foot locking feature we may fix the foot sliding problem. 
 First, we compute the speed of both foot joints, when the speed is slower than the specific threshold $S_{threshold} = 1.5$. We lock the foot and apply 2 joints IK to the leg-angle joints. 
 The red sphere is the foot joint's position and the green sphere in the video shows the IK's target. IK will be applied when the green sphere appears. 
