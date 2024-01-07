@@ -26,6 +26,8 @@
 #include "delfem2/opengl/old/rigv3.h"
 #include "delfem2/rig_bvh.h"
 
+//#define DRAWDEBUG
+
 //   bvh loader, parser and model loaders
 namespace dfm2 = delfem2;
 
@@ -152,12 +154,291 @@ bool Hoge_tomcat(
     return true;
 }
 
+dfm2::CQuatd qfv(dfm2::CVec3d& u, dfm2::CVec3d& v)
+{
+    // a concise version of q from 2 vectors
+    u.normalize();
+    v.normalize();
+    double k = 1.0 + u.dot(v);
+    double s = 1 / sqrt(k + k);
+    dfm2::CVec3d cross = u.cross(v);
+    cross = s * cross;
+    auto angle = 2 * acos(k * s);
+    if (angle < 0.001f)
+    {
+        return dfm2::CQuatd::Identity();
+    }
+    dfm2::CQuatd out = dfm2::CQuatd(k * s, cross.x, cross.y, cross.z);
+    out.normalize();
+    out.SetSmallerRotation();
+    return out;
+}
+
+void forwardKinematic(std::vector<dfm2::CRigBone>& aBone)
+{
+    for (std::size_t ibone = 0; ibone < aBone.size(); ++ibone) {
+        const int ibone_p = aBone[ibone].ibone_parent;
+        if (ibone_p < 0 || ibone_p >= (int)aBone.size()) { // root bone
+            aBone[ibone].transRelative[0] = aBone[ibone].affmat3Global[3];
+            aBone[ibone].transRelative[1] = aBone[ibone].affmat3Global[7];
+            aBone[ibone].transRelative[2] = aBone[ibone].affmat3Global[11];
+            dfm2::CMat3d matLocal3 = dfm2::CMat3d(aBone[ibone].affmat3Global[0], aBone[ibone].affmat3Global[1], aBone[ibone].affmat3Global[2],
+                aBone[ibone].affmat3Global[4], aBone[ibone].affmat3Global[5], aBone[ibone].affmat3Global[6],
+                aBone[ibone].affmat3Global[8], aBone[ibone].affmat3Global[9], aBone[ibone].affmat3Global[10]);
+            dfm2::CQuatd bone_q = matLocal3.GetQuaternion();
+            aBone[ibone].quatRelativeRot[0] = bone_q.x;
+            aBone[ibone].quatRelativeRot[1] = bone_q.y;
+            aBone[ibone].quatRelativeRot[2] = bone_q.z;
+            aBone[ibone].quatRelativeRot[3] = bone_q.w;
+            continue;
+        }
+        // B = A^(-1) * C
+        // https://mathworld.wolfram.com/MatrixInverse.html
+        assert(ibone_p < (int)ibone);
+        double invAffmat[16];  dfm2::Inverse_Mat4(invAffmat, aBone[ibone_p].affmat3Global);
+        double localAff[16];
+        dfm2::MatMat4(localAff, invAffmat, aBone[ibone].affmat3Global);
+        //aBone[ibone].transRelative[0] = localAff[3];
+        //aBone[ibone].transRelative[1] = localAff[7];
+        //aBone[ibone].transRelative[2] = localAff[11];
+        dfm2::CMat3d matLocal3 = dfm2::CMat3d(localAff[0], localAff[1], localAff[2],
+            localAff[4], localAff[5], localAff[6],
+            localAff[8], localAff[9], localAff[10]);
+        dfm2::CQuatd bone_q = matLocal3.GetQuaternion();
+        aBone[ibone].quatRelativeRot[0] = bone_q.x;
+        aBone[ibone].quatRelativeRot[1] = bone_q.y;
+        aBone[ibone].quatRelativeRot[2] = bone_q.z;
+        aBone[ibone].quatRelativeRot[3] = bone_q.w;
+    }
+}
+void applyFK(std::vector<dfm2::CRigBone>& aBone)
+{
+    forwardKinematic(aBone);
+    UpdateBoneRotTrans(aBone);
+}
+
+void backward(std::vector<dfm2::CVec3d>& joints, std::vector<double>& length, dfm2::CVec3d target)
+{
+    joints[joints.size() - 1].x = target.x;
+    joints[joints.size() - 1].y = target.y;
+    joints[joints.size() - 1].z = target.z;
+    for (int i = joints.size() - 2; i >= 0; i--)
+    {
+        dfm2::CVec3d dir_back = joints[i] - joints[i + 1];
+        dir_back.normalize();
+        dfm2::CVec3d new_pos = joints[i + 1] + dir_back * length[i + 1];
+        joints[i].x = new_pos.x;
+        joints[i].y = new_pos.y;
+        joints[i].z = new_pos.z;
+    }
+}
+
+
+void forward(std::vector<dfm2::CVec3d>& joints, std::vector<double>& length, dfm2::CVec3d origin)
+{
+    joints[0].x = origin.x;
+    joints[0].y = origin.y;
+    joints[0].z = origin.z;
+    for (unsigned int i = 1; i <= joints.size() - 1; i++)
+    {
+        dfm2::CVec3d dir_foward = joints[i] - joints[i - 1];
+        dir_foward.normalize();
+        dfm2::CVec3d new_pos = joints[i - 1] + dir_foward * length[i];
+        joints[i].x = new_pos.x;
+        joints[i].y = new_pos.y;
+        joints[i].z = new_pos.z;
+    }
+}
+
+
+void FABRIK(std::vector<dfm2::CRigBone>& aBone, dfm2::CVec3d target)
+{
+    std::vector<dfm2::CVec3d> start_pos;
+    std::vector<dfm2::CVec3d> joints;
+    std::vector<double> length;
+    dfm2::CVec3d origin(aBone[2].affmat3Global[3], aBone[2].affmat3Global[7], aBone[2].affmat3Global[11]);
+    for (int i = 2; i < 5; i++)
+    {
+        dfm2::CVec3d jointPost = dfm2::CVec3d(aBone[i].affmat3Global[3], aBone[i].affmat3Global[7], aBone[i].affmat3Global[11]);
+        joints.push_back(jointPost);
+        start_pos.push_back(jointPost);
+        dfm2::CVec3d p0(aBone[i-1].invBindMat[3], aBone[i-1].invBindMat[7], aBone[i-1].invBindMat[11]);
+        dfm2::CVec3d p1(aBone[i].invBindMat[3], aBone[i].invBindMat[7], aBone[i].invBindMat[11]);
+        double boneLength = dfm2::Distance(p0,p1);
+        length.push_back(boneLength);
+    }
+
+    for (unsigned int j = 0; j < 2; j++)
+    {
+        backward(joints,length, target);
+        forward(joints,length, origin);
+    }
+
+    std::vector<dfm2::CVec3d> end_pos;
+    for (unsigned int i = 0; i < joints.size(); i++)
+    {
+        dfm2::CVec3d pend = joints[i];
+        end_pos.push_back(pend);
+    }
+
+    //reset 
+    //for (unsigned int i = 0; i < start_pos.size(); i++)
+    //{
+    //    joints[i].move(start_pos[i].x, start_pos[i].y, start_pos[i].z);
+    //}
+
+    //Forward Kinematic
+    for (unsigned int i = 1; i < joints.size(); i++)
+    {
+        dfm2::CQuatd r_q;
+        r_q = qfv(start_pos[i] - end_pos[i - 1], end_pos[i] - end_pos[i - 1]);
+        //r_q.SetSmallerRotation();
+        r_q.normalize();
+        int bonemap[3] = { 2,3,4 };
+        dfm2::CQuatd bone_q(aBone[bonemap[i - 1]].quatRelativeRot[3], aBone[bonemap[i - 1]].quatRelativeRot[0], aBone[bonemap[i - 1]].quatRelativeRot[1], aBone[bonemap[i - 1]].quatRelativeRot[2]);
+        dfm2::CQuatd q_current = r_q * bone_q;
+        aBone[bonemap[i - 1]].quatRelativeRot[0] = q_current.x;
+        aBone[bonemap[i - 1]].quatRelativeRot[1] = q_current.y;
+        aBone[bonemap[i - 1]].quatRelativeRot[2] = q_current.z;
+        aBone[bonemap[i - 1]].quatRelativeRot[3] = q_current.w;
+    }
+    UpdateBoneRotTrans(aBone);
+}
+
+void solveik(std::vector<dfm2::CRigBone>& aBone, dfm2::CVec3d target, int start_bone, int end_bone)
+{
+    UpdateBoneRotTrans(aBone);
+    int num_iter = 3;
+    for (unsigned int iter = 0; iter < num_iter; ++iter)
+    {
+        for (unsigned int i = start_bone; i >= end_bone; i--)
+        {
+            dfm2::CVec3d jointnow(aBone[i].RootPosition());
+            dfm2::CVec3d end(aBone[start_bone + 1].RootPosition());
+            dfm2::CVec3d endeff_dir = end - jointnow;
+            dfm2::CVec3d target_dir = target - jointnow;
+            dfm2::CQuatd r_q;
+            r_q = qfv(endeff_dir, target_dir);
+            //dfm2::CQuatd bone_parent(aBone[i-1].quatRelativeRot[3], aBone[i - 1].quatRelativeRot[0], aBone[i - 1].quatRelativeRot[1], aBone[i - 1].quatRelativeRot[2]);
+            //dfm2::CQuatd bone_q(aBone[i].quatRelativeRot[3], aBone[i].quatRelativeRot[0], aBone[i].quatRelativeRot[1], aBone[i].quatRelativeRot[2]);
+            
+            //https://alogicalmind.com/res/ik_ccd/paper.pdf
+            dfm2::CMat3d matLocal3 = dfm2::CMat3d(aBone[i-1].affmat3Global[0], aBone[i - 1].affmat3Global[1], aBone[i - 1].affmat3Global[2],
+                aBone[i - 1].affmat3Global[4], aBone[i - 1].affmat3Global[5], aBone[i - 1].affmat3Global[6],
+                aBone[i - 1].affmat3Global[8], aBone[i - 1].affmat3Global[9], aBone[i - 1].affmat3Global[10]);
+            dfm2::CQuatd bone_parent = matLocal3.GetQuaternion();
+            
+            dfm2::CMat3d matLocalq = dfm2::CMat3d(aBone[i].affmat3Global[0], aBone[i].affmat3Global[1], aBone[i - 1].affmat3Global[2],
+                aBone[i].affmat3Global[4], aBone[i].affmat3Global[5], aBone[i].affmat3Global[6],
+                aBone[i].affmat3Global[8], aBone[i].affmat3Global[9], aBone[i].affmat3Global[10]);
+            dfm2::CQuatd bone_q = matLocalq.GetQuaternion();
+            
+            dfm2::CQuatd parentinv = bone_parent.conjugate();
+            dfm2::CQuatd qnew = parentinv * (r_q * bone_q);
+            aBone[i].quatRelativeRot[0] = qnew.x;
+            aBone[i].quatRelativeRot[1] = qnew.y;
+            aBone[i].quatRelativeRot[2] = qnew.z;
+            aBone[i].quatRelativeRot[3] = qnew.w;
+            UpdateBoneRotTrans(aBone);
+        }
+    }
+}
+
+// Modify the RigBone here, postprocessing
+void PostProcessRigBone(
+    std::vector<dfm2::CRigBone>& aBone,
+    std::vector<dfm2::CRigBone>& aBone_render,
+    std::vector<dfm2::CVec3d>& feature_vectorL,
+    std::vector<dfm2::CVec3d>& feature_vectorR,
+    double* lockAffmat3GlobalL,
+    double* lockAffmat3GlobalR
+)
+{
+    applyFK(aBone);
+    //aBone[4]
+    //dfm2::CRigBone LeftFoot = aBone[4];
+    //dfm2::CVec3d p0(aBone[4].RootPosition());
+    //const dfm2::CVec3d p0(aBone[3].invBindMat[3], aBone[3].invBindMat[7], aBone[3].invBindMat[11]);
+    
+    //std::cout << "{x : " << aBone[2].affmat3Global[3] << "}{y : " << aBone[2].affmat3Global[7] << "}{z : " << aBone[2].affmat3Global[11] << "}" << std::endl;
+    auto pos0L = aBone[4].RootPosition();
+    auto pos0R = aBone[10].RootPosition();
+    //auto pos1R = aBone_render[4].RootPosition();
+    dfm2::CVec3d posL = dfm2::CVec3d(pos0L[0], pos0L[1], pos0L[2]);
+    dfm2::CVec3d posR = dfm2::CVec3d(pos0R[0], pos0R[1], pos0R[2]);
+    //dfm2::CVec3d pos1 = dfm2::CVec3d(pos1R[0], pos1R[1], pos1R[2]);
+    feature_vectorL.erase(feature_vectorL.begin());
+    feature_vectorL.insert(feature_vectorL.end(), posL);
+    feature_vectorR.erase(feature_vectorR.begin());
+    feature_vectorR.insert(feature_vectorR.end(), posR);
+    if (!feature_vectorL.size() == 2)
+        std::cout << "size wrong" << std::endl;
+    double distanceLeft = dfm2::Distance(feature_vectorL[0], feature_vectorL[1]);
+    double distanceRight = dfm2::Distance(feature_vectorR[0], feature_vectorR[1]);
+    //std::cout << "Foot Displacement : "  << distance << std::endl;
+
+    if (distanceLeft < 0.17f) {
+#ifdef DRAWDEBUG
+        float color[3] = { 0.9f,0.1f,0.1f };
+        ::glColor3fv(color);
+        ::delfem2::opengl::DrawSphereAt(32, 32, 0.5, aBone[4].affmat3Global[3], aBone[4].affmat3Global[7], aBone[4].affmat3Global[11]);
+#endif
+    }
+    else
+    {
+        std::copy(aBone[4].affmat3Global, aBone[4].affmat3Global + 16, lockAffmat3GlobalL);
+    }
+
+    if (distanceRight < 0.17f) {
+#ifdef DRAWDEBUG
+        float color[3] = { 0.9f,0.1f,0.1f };
+        ::glColor3fv(color);
+        ::delfem2::opengl::DrawSphereAt(32, 32, 0.5, aBone[10].affmat3Global[3], aBone[10].affmat3Global[7], aBone[10].affmat3Global[11]);
+#endif
+    }
+    else
+    {
+        std::copy(aBone[10].affmat3Global, aBone[10].affmat3Global + 16, lockAffmat3GlobalR);
+    }
+
+#ifdef DRAWDEBUG
+    float color[3] = { 0.1f,0.9f,0.1f };
+    ::glColor3fv(color);
+    ::delfem2::opengl::DrawSphereAt(32, 32, 0.5, lockAffmat3GlobalL[3], lockAffmat3GlobalL[7], lockAffmat3GlobalL[11]);
+    ::glColor3fv(color);
+    ::delfem2::opengl::DrawSphereAt(32, 32, 0.5, lockAffmat3GlobalR[3], lockAffmat3GlobalR[7], lockAffmat3GlobalR[11]);
+#endif
+    for (size_t i = 0; i < aBone.size(); ++i) {
+        // Copy individual member variables from source to destination
+        aBone_render[i].name = aBone[i].name;
+        std::copy(std::begin(aBone[i].invBindMat), std::end(aBone[i].invBindMat), std::begin(aBone_render[i].invBindMat));
+        aBone_render[i].ibone_parent = aBone[i].ibone_parent;
+        std::copy(std::begin(aBone[i].transRelative), std::end(aBone[i].transRelative), std::begin(aBone_render[i].transRelative));
+        aBone_render[i].scale = aBone[i].scale;
+        std::copy(std::begin(aBone[i].quatRelativeRot), std::end(aBone[i].quatRelativeRot), std::begin(aBone_render[i].quatRelativeRot));
+        std::copy(std::begin(aBone[i].affmat3Global), std::end(aBone[i].affmat3Global), std::begin(aBone_render[i].affmat3Global));
+    }
+    UpdateBoneRotTrans(aBone_render);
+    dfm2::CVec3d targetL = dfm2::CVec3d(lockAffmat3GlobalL[3], lockAffmat3GlobalL[7], lockAffmat3GlobalL[11]);
+    dfm2::CVec3d targetR = dfm2::CVec3d(lockAffmat3GlobalR[3], lockAffmat3GlobalR[7], lockAffmat3GlobalR[11]);
+    //if (distanceLeft < 0.17f) {
+    //    solveIK(aBone_render, targetL, 3, 2);
+    //}
+    //if (distanceRight < 0.17f) {
+    //    solveIK(aBone_render, targetR, 9, 8);
+    //}
+}
 
 
 template<int ndimin_pose, int ndimout_pose, int nOctave>
 void VisBvhPhase_tomcat(
     MLP_Fourier<ndimin_pose, nOctave>& model_pose,
     std::vector<dfm2::CRigBone>& aBone,
+    std::vector<dfm2::CRigBone>& aBone_render,
+    std::vector<dfm2::CVec3d>& feature_vectorL,
+    std::vector<dfm2::CVec3d>& feature_vectorR,
+    double* lockAffine3GlobalL,
+    double* lockAffine3GlobalR,
     const dfm2::CVec2d& root_pos2,
     const std::vector<dfm2::CVec2d>& vec_pos2,
     const dfm2::CVec2d& vec_dirz,
@@ -202,11 +483,19 @@ void VisBvhPhase_tomcat(
             //R0.GetQuat_RotMatrix(q0y.p);
             q0y = R0.GetQuaternion();
             Encoder_Pose::draw_in(vec_input_pose, q0y, p0);
+            PostProcessRigBone(aBone, aBone_render, feature_vectorL, feature_vectorR, lockAffine3GlobalL, lockAffine3GlobalR);
         }
+        dfm2::CVec3d target = dfm2::CVec3d(0.0f,0.0f,0.0f);
 
+        ::glBegin(GL_LINES);
+        ::glColor3d(0.0f, 0.0f, 1.0f);
+        ::glVertex3d(0.0f, 0.0f, 0.0f);
+        ::glVertex3d(0.0f, 0.1f, 10.0f);
+        ::glEnd();
         ::glLineWidth(1);
+
         dfm2::opengl::DrawBone_Octahedron(
-            aBone,
+            aBone_render,
             12, -1,
             0.1, 1.0);
     
@@ -279,6 +568,11 @@ int main(int argc, char *argv[]) {
     };
 
     std::vector<dfm2::CRigBone> vec_rig_bone;
+    std::vector<dfm2::CRigBone> vec_rig_bone_render; 
+    std::vector<dfm2::CVec3d> feature_vectorL;
+    std::vector<dfm2::CVec3d> feature_vectorR;
+    double lockAffine3GlobalL[16];
+    double lockAffine3GlobalR[16];
     std::vector<dfm2::CChannel_BioVisionHierarchy> vec_channel_bvh;
     std::vector<double> vec_phase;
     std::vector<double> real_phase;
@@ -298,9 +592,20 @@ int main(int argc, char *argv[]) {
             vec_bvh_time_series_data,
             header_bvh,
             path_bvh);
+        Read_BioVisionHierarchy(
+            vec_rig_bone_render,
+            vec_channel_bvh,
+            nframe,
+            frame_time,
+            vec_bvh_time_series_data,
+            header_bvh,
+            path_bvh);
 
         dfm2::SetPose_BioVisionHierarchy(
             vec_rig_bone, vec_channel_bvh,
+            vec_bvh_time_series_data.data() + 0 * vec_channel_bvh.size());
+        dfm2::SetPose_BioVisionHierarchy(
+            vec_rig_bone_render, vec_channel_bvh,
             vec_bvh_time_series_data.data() + 0 * vec_channel_bvh.size());
         assert(vec_rig_bone.size() == 38 && vec_channel_bvh.size() == 96);
         //
@@ -309,7 +614,16 @@ int main(int argc, char *argv[]) {
         TransRotRoot(aRootPos2, aRootHeight, aRootRot, aRootDirZ,
             vec_channel_bvh, vec_bvh_time_series_data);
     }
-
+    auto pos0L = vec_rig_bone[4].RootPosition();
+    dfm2::CVec3d pos0Lv = dfm2::CVec3d(pos0L[0], pos0L[1], pos0L[2]);
+    std::copy(vec_rig_bone[4].affmat3Global, vec_rig_bone[4].affmat3Global + 16, lockAffine3GlobalL);
+    feature_vectorL.push_back(pos0Lv);
+    feature_vectorL.push_back(pos0Lv);
+    auto pos0R = vec_rig_bone[10].RootPosition();
+    dfm2::CVec3d pos0Rv = dfm2::CVec3d(pos0R[0], pos0R[1], pos0R[2]);
+    std::copy(vec_rig_bone[10].affmat3Global, vec_rig_bone[10].affmat3Global + 16, lockAffine3GlobalR);
+    feature_vectorR.push_back(pos0Rv);
+    feature_vectorR.push_back(pos0Rv);
   //const float dt = 0.0083f;
   //std::vector<CParticle> aParticle;
 
@@ -734,7 +1048,7 @@ int main(int argc, char *argv[]) {
      // std::cout <<   "traj size : " << vec_pos2.size() << std::endl;
 
       VisBvhPhase_tomcat<ndim_input_pose, ndim_output_pose>(
-          model_pose, vec_rig_bone, root_pos2,
+          model_pose, vec_rig_bone, vec_rig_bone_render, feature_vectorL, feature_vectorR,lockAffine3GlobalL, lockAffine3GlobalR, root_pos2,
           vec_pos2, face_dirZ, manual_phase, vec_channel_bvh,
           viewer_source, floor);
 
