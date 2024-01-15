@@ -57,7 +57,9 @@ The predicted animation also has a foot sliding issue where the predicted foot p
 
 <p>
 <img src="image/ikapplied.gif" alt="sta15" width="640"/>
-<em>foot lock IK</em>
+  
+<em>foot lock IK (Without Blending in-between animation WIP)</em>
+
 </p>
 
 By implementing IK to leg-ankle joints, and combining the foot locking feature we may fix the foot sliding problem. 
