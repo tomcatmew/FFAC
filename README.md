@@ -51,7 +51,7 @@ One of the solutions is to apply the full-body IK. In our case, we used CCD IK. 
 <em>applied IK reconnected bones</em>
 </p>
 
-**Implement IK for foot lock (WIP)**
+**Implement IK for foot lock (no blending in between, WIP)**
 
 The predicted animation also has a foot sliding issue where the predicted foot position does not perfectly match the trajectory speed.
 
